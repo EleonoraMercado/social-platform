@@ -1,0 +1,74 @@
+use social-platform;
+
+
+#1 seleziona gli utenti che hanno postato almeno un video
+
+/* Dalla tabella users u, fammi vedere le colonne u.id e u.username,tramite join uniscile di modo che in post u u_id corrisponda a p.user_id
+ * unisci anche media-post mp di modo che p_id corrisponda a m.post_id e unisci anche medias m di modo che mp.media_id corrisponda a m.id
+ * tale che m.type sia uguale a video, raggrupa per id e username.
+ * Se non utilizzo group by i nominativi si ripetono molteplici volte.
+ */
+
+SELECT u.id, u.username 
+FROM users u 
+JOIN posts p ON u.id = p.user_id 
+JOIN media_post mp ON p.id = mp.post_id 
+JOIN medias m ON mp.media_id = m.id 
+WHERE m.type = 'video'
+GROUP BY u.id, u.username;
+
+
+#2 Seleziona tutti i post senza like
+
+/*Dalla tabella posts p, fammi vedere p.id, p.title, p.created_at,p.updated_at,
+ *tramite left join unisci la tabella post con la tabella likes
+ *cosicchè tutti i post vengano inclusi anche quelli null che non hanno 
+ *ricevuto likes, tramite left join unisci le righe di modo che p.id corrisponda a l.post_id, 
+ *tale che l.post_id sia null, quindi filtra mostrandomi solamente i null.
+ */
+
+SELECT p.id, p.title, p.date, p.created_at, p.updated_at
+FROM posts p 
+LEFT JOIN likes l ON p.id = l.post_id WHERE l.post_id IS NULL; 
+
+
+#3 Conta il numero di like per ogni post
+
+/*Dalla tabella post p, fammi vedere p.id, ptitle, conteggia i like per ogni post
+ *tramite l.post_id,tramite join uniscile di modo che p.id corrisponda a l.post_id,
+ *raggruppa mostrandomi l'id e il titolo del post.
+*/
+
+SELECT p.id, p.title, COUNT(l.post_id) as totale_likes
+FROM posts p
+JOIN likes l ON p.id = l.post_id 
+GROUP BY p.id, p.title;
+
+#4 Ordina gli tenti per il numero di media caricati
+
+/*Dalla tabella users u, fammi vedere u.id, u.username, conteggia il jumero dei media caricati,
+ *tramite join unisci la tabella users s e la tabella medias m, di modo che la riga u.id corrisponda a m.user_id,
+ *raggruppa mostrandomi id e username
+ *ordina il conteggio in modo ascendente.
+ */
+
+SELECT u.id, u.username, COUNT(m.id) as totale_media
+FROM users u
+JOIN medias m ON u.id = m.user_id 
+GROUP BY u.id, u.username 
+ORDER BY COUNT(m.id); 
+
+#5 Ordina gli utenti per totale di likes ricevuti nel loro posts
+
+/*Dalla tabella users u, fammi vedere l'id, username e il conteggio del totale dei likes ricevuti,
+ *tramite join unisci la tabella users con la tabella post, di modo che la riga u.id corrisponda a p.user_id,
+ *tramite join unisci la tabella posts con la tabella likes, di modo che la riga p.id corrisponda l.post_id,
+ * raggruppa mostrandomi l'id e username, ordina il conteggio in modo ascendente
+ */
+
+SELECT u.id, u.username, COUNT(l.post_id) as totale_likes_per_post
+FROM users u 
+JOIN posts p ON u.id = p.user_id 
+JOIN likes l ON p.id = l.post_id 
+GROUP BY u.id, u.username 
+ORDER BY COUNT(l.post_id); 
